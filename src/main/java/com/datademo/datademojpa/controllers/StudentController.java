@@ -24,25 +24,20 @@ public class StudentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Student>> getAllStudents(){
+    public ResponseEntity<List<Student>> getAllStudents() {
         List<Student> students = studentService.getStudents();
         return new ResponseEntity<>(students, HttpStatus.OK);
     }
 
     @GetMapping(path = "/{studentId}")
     public ResponseEntity<Student> getStudentById(@PathVariable("studentId") Long studentId) throws DBDResourceNotFoundException {
-        Optional<Student> student = studentService.getStudentById(studentId);
-        if(student.isPresent()){
-            return new ResponseEntity<>(student.get(), HttpStatus.OK);
-        }
-        else {
-            throw new DBDResourceNotFoundException("Student with ID "+ studentId + " does not exist");
-        }
+        Student student = studentService.getStudentById(studentId);
+        return new ResponseEntity<>(student, HttpStatus.CREATED);
 
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Boolean>> registerNewUser(@RequestBody Student student){
+    public ResponseEntity<Map<String, Boolean>> registerNewUser(@RequestBody Student student) {
         studentService.addNewStudent(student);
         Map<String, Boolean> map = new HashMap<>();
         map.put("sucess", true);
@@ -50,7 +45,7 @@ public class StudentController {
     }
 
     @DeleteMapping(path = "/{studentId}")
-    public ResponseEntity<Map<String, Boolean>> deleteStudent(@PathVariable("studentId") Long studentId){
+    public ResponseEntity<Map<String, Boolean>> deleteStudent(@PathVariable("studentId") Long studentId) {
         studentService.deleteStudent(studentId);
         Map<String, Boolean> map = new HashMap<>();
         map.put("sucess", true);
@@ -58,7 +53,7 @@ public class StudentController {
     }
 
     @PutMapping(path = "/{studentId}")
-    public ResponseEntity<Map<String, Boolean>> updateStudent(@PathVariable("studentId") Long studentId, @RequestBody Map<String, Object> studentMap){
+    public ResponseEntity<Map<String, Boolean>> updateStudent(@PathVariable("studentId") Long studentId, @RequestBody Map<String, Object> studentMap) {
         String firstName = (String) studentMap.get("firstname");
         String lastName = (String) studentMap.get("lastName");
         String email = (String) studentMap.get("email");

@@ -26,8 +26,8 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
-    public Optional<Student> getStudentById(Long studentId) throws DBDResourceNotFoundException{
-        return studentRepository.findById(studentId);
+    public Student getStudentById(Long studentId) throws DBDResourceNotFoundException{
+        return studentRepository.findById(studentId).orElseThrow(()-> new DBDResourceNotFoundException("Student with ID "+ studentId + " does not exist"));
     }
 
     public void addNewStudent(Student student) throws DBDBadRequestException{
