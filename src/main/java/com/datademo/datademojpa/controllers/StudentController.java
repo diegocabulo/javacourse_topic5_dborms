@@ -1,6 +1,7 @@
 package com.datademo.datademojpa.controllers;
 
 import com.datademo.datademojpa.domain.Student;
+import com.datademo.datademojpa.exceptions.DBDResourceNotFoundException;
 import com.datademo.datademojpa.services.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,9 +30,15 @@ public class StudentController {
     }
 
     @GetMapping(path = "/{studentId}")
-    public ResponseEntity<Student> getStudentById(@PathVariable("studentId") Long studentId){
+    public ResponseEntity<Student> getStudentById(@PathVariable("studentId") Long studentId) throws DBDResourceNotFoundException {
         Optional<Student> student = studentService.getStudentById(studentId);
-        return new ResponseEntity<>(student.get(), HttpStatus.OK);
+        if(student.isPresent()){
+            return new ResponseEntity<>(student.get(), HttpStatus.OK);
+        }
+        else {
+            throw new DBDResourceNotFoundException("Student with ID "+ studentId + " does not exist");
+        }
+
     }
 
     @PostMapping

@@ -1,6 +1,8 @@
 package com.datademo.datademojpa.services;
 
 import com.datademo.datademojpa.domain.Student;
+import com.datademo.datademojpa.exceptions.DBDBadRequestException;
+import com.datademo.datademojpa.exceptions.DBDResourceNotFoundException;
 import com.datademo.datademojpa.repositories.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,32 +26,33 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
-    public Optional<Student> getStudentById(Long studentId){
+    public Optional<Student> getStudentById(Long studentId) throws DBDResourceNotFoundException{
         return studentRepository.findById(studentId);
     }
 
-    public void addNewStudent(Student student){
+    public void addNewStudent(Student student) throws DBDBadRequestException{
         Optional<Student> studentOptional = studentRepository.findStudentByEmail(student.getEmail());
 
         if(studentOptional.isPresent()){
-            throw new IllegalStateException("email taken");
+            throw new DBDBadRequestException("Invalid details. failed to create account");
         }
         studentRepository.save(student);
     }
 
-    public void deleteStudent(Long studentId){
+    public void deleteStudent(Long studentId) throws DBDResourceNotFoundException {
         boolean studentExist = studentRepository.existsById(studentId);
 
         if(!studentExist){
-            throw new IllegalStateException("Student with ID "+ studentId + " does not exist");
+            throw new DBDResourceNotFoundException("Student with ID "+ studentId + " does not exist");
         }
         studentRepository.deleteById(studentId);
     }
 
     @Transactional
-    public void updateStudent(Long studentId, String firstName, String lastName, String email){
+    public void updateStudent(Long studentId, String firstName, String lastName, String email)
+            throws DBDResourceNotFoundException,DBDBadRequestException{
         Student student = studentRepository.findById(studentId).orElseThrow(()->
-                new IllegalStateException("Student with ID "+ studentId + " does not exist"));
+                new DBDResourceNotFoundException("Student with ID "+ studentId + " does not exist"));
         if(firstName != null && firstName.length() > 0 && !Objects.equals(student.getFirstName(),firstName)){
             student.setFirstName(firstName);
         }
@@ -59,7 +62,7 @@ public class StudentService {
         if(email != null && email.length() > 0 && !Objects.equals(student.getEmail(),email)){
             Optional<Student> studentOptional = studentRepository.findStudentByEmail(email);
             if(studentOptional.isPresent()){
-                throw new IllegalStateException("Email Taken");
+                throw new DBDBadRequestException("Email Taken");
             }
             student.setEmail(email);
         }
