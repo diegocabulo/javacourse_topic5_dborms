@@ -4,8 +4,10 @@ import com.datademo.datademojpa.domain.Student;
 import com.datademo.datademojpa.repositories.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -22,6 +24,10 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
+    public Optional<Student> getStudentById(Long studentId){
+        return studentRepository.findById(studentId);
+    }
+
     public void addNewStudent(Student student){
         Optional<Student> studentOptional = studentRepository.findStudentByEmail(student.getEmail());
 
@@ -29,5 +35,33 @@ public class StudentService {
             throw new IllegalStateException("email taken");
         }
         studentRepository.save(student);
+    }
+
+    public void deleteStudent(Long studentId){
+        boolean studentExist = studentRepository.existsById(studentId);
+
+        if(!studentExist){
+            throw new IllegalStateException("Student with ID "+ studentId + " does not exist");
+        }
+        studentRepository.deleteById(studentId);
+    }
+
+    @Transactional
+    public void updateStudent(Long studentId, String firstName, String lastName, String email){
+        Student student = studentRepository.findById(studentId).orElseThrow(()->
+                new IllegalStateException("Student with ID "+ studentId + " does not exist"));
+        if(firstName != null && firstName.length() > 0 && !Objects.equals(student.getFirstName(),firstName)){
+            student.setFirstName(firstName);
+        }
+        if(lastName != null && lastName.length() > 0 && !Objects.equals(student.getLastName(),lastName)){
+            student.setLastName(lastName);
+        }
+        if(email != null && email.length() > 0 && !Objects.equals(student.getEmail(),email)){
+            Optional<Student> studentOptional = studentRepository.findStudentByEmail(email);
+            if(studentOptional.isPresent()){
+                throw new IllegalStateException("Email Taken");
+            }
+            student.setEmail(email);
+        }
     }
 }
